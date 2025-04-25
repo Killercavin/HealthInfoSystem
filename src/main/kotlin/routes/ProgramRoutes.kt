@@ -12,68 +12,93 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
+/**
+ * Program API routes handler
+ *
+ * Provides endpoints for:
+ * - Listing all programs
+ * - Creating new programs
+ */
 fun Route.programRoutes() {
-    // Programs routes
-    route("/api") {
+    route("/api/programs") {
+        // GET - Fetch all programs
+        get {
+            val programs = getAllPrograms()
+            call.respond(HttpStatusCode.OK, programs)
+        }
 
-        // Fetch all programs in a transaction
-        route("/programs") {
-            get {
-                // Fetch all programs and map to DTOs
-                val programs = transaction {
-                    Tables.Programs
-                        .selectAll()
-                        .map { row ->
-                            ProgramResponseDTO(
-                                id = row[Tables.Programs.id],
-                                name = row[Tables.Programs.name],
-                                description = row[Tables.Programs.description]
-                            )
-                        }
+        // POST - Create new program
+        post {
+            try {
+                val programDTO = call.receive<ProgramDTO>()
+
+                // Validate program data
+                if (!validateProgramData(programDTO)) {
+                    call.respond(HttpStatusCode.BadRequest, errorResponse("Program name cannot be empty"))
+                    return@post
                 }
 
-                // Respond with a homogeneous list of ProgramResponseDTO (all same type)
-                call.respond(HttpStatusCode.OK, programs)
-            }
+                // Create program and return response
+                val newId = createProgram(programDTO)
+                call.respond(HttpStatusCode.Created, mapOf("id" to newId))
 
-            // POST - Create new program
-            post {
-                try {
-                    val programDTO = call.receive<ProgramDTO>()
-
-                    // Validation
-                    if (programDTO.name.isBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Program name cannot be empty"))
-                        return@post
-                    }
-
-                    // Insert into database
-                    val newId = transaction {
-                        Tables.Programs.insert {
-                            it[name] = programDTO.name.trim()
-                            it[description] = programDTO.description?.trim()
-                        } get Tables.Programs.id
-                    }
-
-                    // Return success with the new ID
-                    call.respond(HttpStatusCode.Created, mapOf("id" to newId))
-
-                } catch (e: Exception) {
-                    application.log.error("Failed to create program", e)
-                    call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Server error: ${e.message}"))
-                }
-            }
-            route("/{id}") {
-                get {
-                    // Get a specific program
-                }
-                put {
-                    // Update a program
-                }
-                delete {
-                    // Delete a program
-                }
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest,
+                    errorResponse("Invalid request format. Required field: name"))
+            } catch (e: Exception) {
+                application.log.error("Failed to create program", e)
+                call.respond(HttpStatusCode.InternalServerError,
+                    errorResponse("Server error: ${e.message}"))
             }
         }
     }
 }
+
+/**
+ * Retrieves all programs from the database
+ *
+ * @return List of program DTOs
+ */
+private fun getAllPrograms(): List<ProgramResponseDTO> = transaction {
+    Tables.Programs
+        .selectAll()
+        .map { row ->
+            ProgramResponseDTO(
+                id = row[Tables.Programs.id],
+                name = row[Tables.Programs.name],
+                description = row[Tables.Programs.description]
+            )
+        }
+}
+
+/**
+ * Validates program data before creating a new program
+ *
+ * @param programDTO The program data to validate
+ * @return true if validation passes, false otherwise
+ */
+private fun validateProgramData(programDTO: ProgramDTO): Boolean {
+    return programDTO.name.isNotBlank()
+}
+
+/**
+ * Creates a new program in the database
+ *
+ * @param programDTO The program data to insert
+ * @return ID of the newly created program
+ */
+private fun createProgram(programDTO: ProgramDTO): Int = transaction {
+    Tables.Programs.insert {
+        it[name] = programDTO.name.trim()
+        it[description] = programDTO.description?.trim()
+    } get Tables.Programs.id
+}
+
+/**
+ * Creates a standardized error response
+ *
+ * @param message The error message
+ * @return Map with error field
+ */
+private fun errorResponse(message: String): Map<String, String> =
+    mapOf("error" to message)

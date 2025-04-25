@@ -26,11 +26,12 @@ object Tables {
 
     // A table to hold the enrollments made
     object Enrollments : Table("enrollments") {
-        val id         = integer("id").autoIncrement()
-        val clientId   = integer("client_id").references(Clients.id, onDelete = ReferenceOption.CASCADE)
-        val programId  = integer("program_id").references(Programs.id, onDelete = ReferenceOption.CASCADE)
-        // Replace Joda DateTime with java.time.Instant
+        val id        = integer("id").autoIncrement()
+        val clientId  = integer("client_id").references(Clients.id, onDelete = ReferenceOption.CASCADE)
+        val programId = integer("program_id").references(Programs.id, onDelete = ReferenceOption.CASCADE)
         val enrolledAt = timestamp("enrolled_at").clientDefault { Instant.now() }
+
         override val primaryKey = PrimaryKey(id)
     }
+
 }
