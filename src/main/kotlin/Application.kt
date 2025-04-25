@@ -33,7 +33,11 @@ fun Application.module() {
 
     // Configure JSON serialization/deserialization
     install(ContentNegotiation) {
-        json(Json { })
+        json(Json {
+            prettyPrint = true
+            encodeDefaults = true // Include default values in serialization
+            ignoreUnknownKeys = true // Ignore unknown keys during deserialization
+        })
     }
 
     // Set up application components

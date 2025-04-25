@@ -1,12 +1,13 @@
 # HealthInfoSystem
 
-A minimal Health Information System built with Ktor (Kotlin) and Exposed ORM, plus static files for a simple UI.
+A minimal Health Information System built with Ktor (Kotlin) and Exposed ORM, focused on API-first development.
 
 ## Tech Stack
 
 - **Backend:** Ktor, Exposed, HikariCP, SQLite
 - **Serialization & Logging:** kotlinx-serialization, ContentNegotiation, CallLogging
-- **Frontend:** Static HTML/CSS/JS served via Ktor’s `static` plugin
+- **Frontend:** Static HTML/CSS/JS served via Ktor’s `static` plugin (partially included - programs page and home only )
+- **Testing:** Ktor server testing framework + Kotlin test
 
 ## Project Structure
 
@@ -17,7 +18,7 @@ backend/
    └─ configs/
       ├─ Database.kt            # configureDatabase() extension
       ├─ Routing.kt             # programRoutes(), clientRoutes(), enrollmentRoutes()
-      ├─ Security.kt            # Security for the exposed endpoint - upcoming...
+      ├─ Security.kt            # (not used - retained for future extension)
       ├─ Tables.kt              # Exposed table definitions
       └─ db/
          ├─ DatabaseFactory.kt  # Exposed database configurations
@@ -30,8 +31,11 @@ backend/
    └─ routes/
       ├─ ProgramRoutes.kt       # GET and POST /api/programs
       ├─ ClientRoutes.kt        # Client-related endpoints: create, search, profile
+└─ test/
+   ├─ ProgramRoutesTest.kt      # Unit tests for program routes
+   ├─ ClientRoutesTest.kt       # Unit tests for client and enrollment logic
 resources/
-└─ static/                      # Static UI files (HTML/CSS/JS)
+└─ static/                      # Static UI files (unused)
 build.gradle.kts                # Dependencies & Kotlin serialization plugin
 ```
 
@@ -130,7 +134,7 @@ build.gradle.kts                # Dependencies & Kotlin serialization plugin
   ]
   ```
 
-### View Client Profile
+### View Client Profile (Exposed to External Systems)
 
 - **GET** `/api/clients/{id}`
 - **Response**
@@ -150,18 +154,20 @@ build.gradle.kts                # Dependencies & Kotlin serialization plugin
   }
   ```
 
-## Next Steps
+## Final Status
 
-- **Enable CORS for external system access** (in progress)
-- **Secure the exposed endpoints** (`Security.kt`) – upcoming
-- **Simple Static UI** under `resources/static/`
+- ✅ All required API endpoints implemented
+- ✅ Client profile successfully exposed for integration
+- ✅ CORS enabled for `localhost:8080` to allow external access
+- ✅ API tests written for client and program logic
+- ✅ Fully focused and delivered API-first implementation
 
 ---
 
 > _Progress so far:_  
-> ✓ Database setup with HikariCP & Exposed  
-> ✓ ContentNegotiation + CallLogging installed  
-> ✓ Program and Client DTOs, tables, and routes implemented  
-> ✓ Client enrollment and profile API added  
-> ✓ Ready for cross-origin access (CORS setup next)
+> ✓ Full backend setup with Ktor, Exposed & SQLite  
+> ✓ Program and client CRUD routes working as intended  
+> ✓ Enrollment and profile APIs connected and tested  
+> ✓ Tested endpoints using Postman and automated test cases  
+> ✓ Basic Ktor unit tests created for programs and clients
 
