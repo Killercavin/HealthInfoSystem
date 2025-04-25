@@ -1,5 +1,6 @@
 package com.example.configs
 
+import com.example.routes.clientRoutes
 import com.example.routes.programRoutes
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -10,7 +11,8 @@ fun Application.configureRouting() {
         staticResources("/", "static") // Loading the static
 
         // API endpoints
-        programRoutes()
+        programRoutes() // programs
+        clientRoutes() // clients
 
     }
 }

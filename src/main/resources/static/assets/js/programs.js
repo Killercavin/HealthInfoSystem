@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Make these functions globally available
+    // Making these functions globally available
     window.editProgram = function(id) {
         alert(`Edit program ${id} - Functionality to be implemented`);
     };

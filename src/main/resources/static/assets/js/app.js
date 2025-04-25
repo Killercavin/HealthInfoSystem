@@ -18,5 +18,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // You can add more client-side functionality here
+    // More client-side functionality here
 });

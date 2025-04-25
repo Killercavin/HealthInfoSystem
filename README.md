@@ -14,14 +14,22 @@ A minimal Health Information System built with Ktor (Kotlin) and Exposed ORM, pl
 backend/
 └─ src/main/kotlin/com/example/
    ├─ Application.kt            # Server bootstrap: DB setup, plugins, routing
-   ├─ Database.kt               # configureDatabase() extension
-   ├─ Routing.kt                # programRoutes(), clientRoutes(), enrollmentRoutes()
-   ├─ Tables.kt                 # Exposed table definitions
+   └─ configs/
+      ├─ Database.kt            # configureDatabase() extension
+      ├─ Routing.kt             # programRoutes(), clientRoutes(), enrollmentRoutes()
+      ├─ Security.kt            # Security for the exposed endpoint - upcoming...
+      ├─ Tables.kt              # Exposed table definitions
+      └─ db/
+         ├─ DatabaseFactory.kt  # Exposed database configurations
    └─ models/
       ├─ ProgramDTO.kt          # @Serializable for POST /api/programs
-      ├─ ProgramResponseDTO.kt  # @Serializable for GET /api/programs
-      ├─ ClientDTO.kt           # upcoming…
-      └─ EnrollmentDTO.kt        # upcoming…
+      ├─ ClientDTO.kt           # For client creation
+      ├─ ClientResponseDTO.kt   # For search
+      ├─ ClientProfileDTO.kt    # For profile with enrolled programs
+      ├─ EnrollmentDTO.kt       # For client enrollment into a program
+   └─ routes/
+      ├─ ProgramRoutes.kt       # GET and POST /api/programs
+      ├─ ClientRoutes.kt        # Client-related endpoints: create, search, profile
 resources/
 └─ static/                      # Static UI files (HTML/CSS/JS)
 build.gradle.kts                # Dependencies & Kotlin serialization plugin
@@ -43,7 +51,7 @@ build.gradle.kts                # Dependencies & Kotlin serialization plugin
    The server listens on `http://localhost:8080`.
 
 3. **Database**  
-   The SQLite file is created automatically at `./data/healthinfosystem.db`.
+   The SQLite file is created automatically at `./data`.
 
 ## Implemented Endpoints
 
@@ -77,20 +85,83 @@ build.gradle.kts                # Dependencies & Kotlin serialization plugin
   ]
   ```
 
+### Create Client
+
+- **POST** `/api/clients`
+- **Request Body**
+  ```json
+  {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane.doe@example.com"
+  }
+  ```
+- **Response**
+  ```json
+  { "id": 1 }
+  ```
+
+### Enroll Client
+
+- **POST** `/api/clients/{id}/enroll`
+- **Request Body**
+  ```json
+  {
+    "programId": 2
+  }
+  ```
+- **Response**
+  ```json
+  { "message": "Client enrolled successfully" }
+  ```
+
+### Search Clients
+
+- **GET** `/api/clients?q=searchText`
+- **Response**
+  ```json
+  [
+    {
+      "id": 1,
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "jane.doe@example.com"
+    }
+  ]
+  ```
+
+### View Client Profile
+
+- **GET** `/api/clients/{id}`
+- **Response**
+  ```json
+  {
+    "id": 1,
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane.doe@example.com",
+    "programs": [
+      {
+        "id": 2,
+        "name": "Malaria",
+        "description": "Prevention and treatment"
+      }
+    ]
+  }
+  ```
+
 ## Next Steps
 
-- **Client Registration** (`POST /api/clients`)
-- **Enroll Client** (`POST /api/clients/{id}/enroll`)
-- **Search Clients** (`GET /api/clients?q=…`)
-- **View Client Profile** (`GET /api/clients/{id}`)
+- **Enable CORS for external system access** (in progress)
+- **Secure the exposed endpoints** (`Security.kt`) – upcoming
 - **Simple Static UI** under `resources/static/`
 
 ---
 
 > _Progress so far:_  
-> – Database setup with HikariCP & Exposed  
-> – ContentNegotiation + CallLogging installed  
-> – Program DTOs, table, routes implemented and tested
-
-Feel free to run the existing endpoints, and watch this space as we flesh out clients and enrollments next!
+> ✓ Database setup with HikariCP & Exposed  
+> ✓ ContentNegotiation + CallLogging installed  
+> ✓ Program and Client DTOs, tables, and routes implemented  
+> ✓ Client enrollment and profile API added  
+> ✓ Ready for cross-origin access (CORS setup next)
 

@@ -10,3 +10,13 @@ data class ProgramDTO(
     val name: String,
     val description: String? = null
 )
+
+/**
+ * DTO for sending program data in responses.
+ */
+@Serializable
+data class ProgramResponseDTO(
+    val id: Int,
+    val name: String,
+    val description: String? = null
+)
