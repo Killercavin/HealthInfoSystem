@@ -31,6 +31,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     implementation("io.ktor:ktor-server-call-logging:2.2.4")
+    implementation("io.ktor:ktor-server-cors:2.2.4")
 
     // Exposed core + DAO + JDBC + SQLite + Java Time
     implementation("org.jetbrains.exposed:exposed-core:0.41.1")

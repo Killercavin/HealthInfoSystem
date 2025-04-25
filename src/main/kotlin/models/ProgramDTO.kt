@@ -2,9 +2,6 @@ package com.example.models
 
 import kotlinx.serialization.Serializable
 
-/**
- * DTO for creating or receiving a health program.
- */
 @Serializable
 data class ProgramDTO(
     val name: String,
@@ -12,7 +9,7 @@ data class ProgramDTO(
 )
 
 /**
- * DTO for sending program data in responses.
+ * DTO for program data in responses, includes program ID.
  */
 @Serializable
 data class ProgramResponseDTO(

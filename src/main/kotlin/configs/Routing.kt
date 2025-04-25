@@ -8,11 +8,10 @@ import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
     routing {
-        staticResources("/", "static") // Loading the static
+        staticResources("/", "static") // Serve static files (HTML, CSS, JS)
 
-        // API endpoints
-        programRoutes() // programs
-        clientRoutes() // clients
-
+        // Define API routes
+        programRoutes() // Routes for programs
+        clientRoutes()  // Routes for clients
     }
 }

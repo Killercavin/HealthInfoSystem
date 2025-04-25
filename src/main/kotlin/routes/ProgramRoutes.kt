@@ -21,24 +21,24 @@ import org.jetbrains.exposed.sql.transactions.transaction
  */
 fun Route.programRoutes() {
     route("/api/programs") {
-        // GET - Fetch all programs
+        // GET - List all programs
         get {
             val programs = getAllPrograms()
             call.respond(HttpStatusCode.OK, programs)
         }
 
-        // POST - Create new program
+        // POST - Create a new program
         post {
             try {
                 val programDTO = call.receive<ProgramDTO>()
 
-                // Validate program data
+                // Validate program name
                 if (!validateProgramData(programDTO)) {
                     call.respond(HttpStatusCode.BadRequest, errorResponse("Program name cannot be empty"))
                     return@post
                 }
 
-                // Create program and return response
+                // Insert program and return the new ID
                 val newId = createProgram(programDTO)
                 call.respond(HttpStatusCode.Created, mapOf("id" to newId))
 
@@ -57,7 +57,7 @@ fun Route.programRoutes() {
 /**
  * Retrieves all programs from the database
  *
- * @return List of program DTOs
+ * @return List of ProgramResponseDTO
  */
 private fun getAllPrograms(): List<ProgramResponseDTO> = transaction {
     Tables.Programs
@@ -72,7 +72,7 @@ private fun getAllPrograms(): List<ProgramResponseDTO> = transaction {
 }
 
 /**
- * Validates program data before creating a new program
+ * Validates the program data before creating it
  *
  * @param programDTO The program data to validate
  * @return true if validation passes, false otherwise
