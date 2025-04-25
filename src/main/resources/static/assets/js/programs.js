@@ -1,12 +1,11 @@
-// src/main/resources/static/js/programs.js
 document.addEventListener('DOMContentLoaded', function() {
-    // Load programs when page loads
+    // Load programs when the page loads
     loadPrograms();
 
     // Add event listeners
     document.getElementById('saveProgram').addEventListener('click', saveProgram);
 
-    // Function to load programs from API
+    // Function to load programs from the API
     async function loadPrograms() {
         try {
             const response = await fetch('/api/programs');
@@ -27,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayPrograms(programs) {
         const tableBody = document.getElementById('programsTable');
 
+        // If no programs are found, show a message
         if (programs.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No programs found</td></tr>';
             return;
@@ -50,11 +50,12 @@ document.addEventListener('DOMContentLoaded', function() {
         tableBody.innerHTML = html;
     }
 
-    // Save new program
+    // Save a new program
     async function saveProgram() {
         const name = document.getElementById('programName').value.trim();
         const description = document.getElementById('programDescription').value.trim();
 
+        // Check for required fields
         if (!name) {
             alert('Program name is required');
             return;

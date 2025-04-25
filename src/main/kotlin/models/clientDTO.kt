@@ -9,7 +9,7 @@ data class ClientDTO(
     val email: String
 )
 
-// client response data transfer object
+// Response DTO for client data, includes the client ID
 @Serializable
 data class ClientResponseDTO(
     val id: Int,
@@ -18,22 +18,22 @@ data class ClientResponseDTO(
     val email: String
 )
 
-// client enrollment DTO
+// DTO for client enrollment with program ID
 @Serializable
 data class EnrollmentDTO(
     val programId: Int
 )
 
-// search DTO to handle flexible search parameters
+// DTO for flexible search parameters
 @Serializable
 data class ClientSearchDTO(
     val firstName: String? = null,
     val lastName: String? = null,
     val email: String? = null,
-    val q: String? = null // General search query parameter
+    val q: String? = null // General search query
 )
 
-// a DTO for the client profile objects
+// DTO for client profile data, including enrolled programs
 @Serializable
 data class ClientProfileDTO(
     val id: Int,
@@ -43,7 +43,7 @@ data class ClientProfileDTO(
     val programs: List<ProgramSummaryDTO>
 )
 
-// program summary DTO
+// DTO for program summary in client profile
 @Serializable
 data class ProgramSummaryDTO(
     val id: Int,

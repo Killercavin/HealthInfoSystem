@@ -7,7 +7,7 @@ import java.time.Instant
 
 object Tables {
 
-    // A table to hold data for the health programs ie TB, Malaria
+    // Table for health programs (e.g., TB, Malaria)
     object Programs : Table("programs") {
         val id          = integer("id").autoIncrement()
         val name        = varchar("name", 100)
@@ -15,7 +15,7 @@ object Tables {
         override val primaryKey = PrimaryKey(id)
     }
 
-    // A table to hold the clients data
+    // Table for client data
     object Clients : Table("clients") {
         val id        = integer("id").autoIncrement()
         val firstName = varchar("first_name", 50)
@@ -24,7 +24,7 @@ object Tables {
         override val primaryKey = PrimaryKey(id)
     }
 
-    // A table to hold the enrollments made
+    // Table for program enrollments
     object Enrollments : Table("enrollments") {
         val id        = integer("id").autoIncrement()
         val clientId  = integer("client_id").references(Clients.id, onDelete = ReferenceOption.CASCADE)

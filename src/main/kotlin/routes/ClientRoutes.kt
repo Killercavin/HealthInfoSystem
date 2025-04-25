@@ -15,16 +15,9 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
- * Client API routes handler
- *
- * Provides endpoints for:
- * - Listing and searching clients
- * - Creating new clients
- * - Getting client profiles with their enrolled programs
- * - Enrolling clients in programs
+ * Defines client-related API routes
  */
 fun Route.clientRoutes() {
-    // Client API endpoints at /api/clients
     route("/api/clients") {
         // GET operations
         configureClientGetOperations()
@@ -35,7 +28,7 @@ fun Route.clientRoutes() {
 }
 
 /**
- * Configure all GET operations for clients
+ * Configures GET endpoints for clients
  */
 private fun Route.configureClientGetOperations() {
     // Get all clients or search by query parameter
@@ -45,7 +38,7 @@ private fun Route.configureClientGetOperations() {
         call.respond(HttpStatusCode.OK, clients)
     }
 
-    // Advanced search with multiple optional parameters
+    // Advanced search with filters for first name, last name, and email
     get("/search") {
         val clients = advancedSearchClients(
             firstName = call.request.queryParameters["firstName"]?.trim()?.lowercase(),
@@ -68,29 +61,24 @@ private fun Route.configureClientGetOperations() {
 }
 
 /**
- * Configure all POST operations for clients
+ * Configures POST endpoints for clients
  */
 private fun Route.configureClientPostOperations() {
     // Create a new client
     post {
         try {
-            // Receive and validate client data
             val clientDTO = call.receive<ClientDTO>()
             if (!validateClientData(clientDTO)) {
                 call.respond(HttpStatusCode.BadRequest, errorResponse("Invalid client data"))
                 return@post
             }
-
-            // Create client and get response
             val response = createClient(clientDTO)
             call.respond(HttpStatusCode.Created, response)
         } catch (e: ContentTransformationException) {
-            call.respond(HttpStatusCode.BadRequest,
-                errorResponse("Invalid request format. Required fields: firstName, lastName, email"))
+            call.respond(HttpStatusCode.BadRequest, errorResponse("Invalid request format"))
         } catch (e: Exception) {
             call.application.log.error("Error creating client", e)
-            call.respond(HttpStatusCode.InternalServerError,
-                errorResponse("Failed to create client: ${e.message}"))
+            call.respond(HttpStatusCode.InternalServerError, errorResponse("Failed to create client"))
         }
     }
 
@@ -118,10 +106,7 @@ private fun Route.configureClientPostOperations() {
 }
 
 /**
- * Search clients by a general query that matches against any field
- *
- * @param query The search term to look for in any client field
- * @return List of clients matching the search criteria or all clients if query is null
+ * Search for clients based on a general query
  */
 private fun searchClients(query: String?): List<ClientResponseDTO> = transaction {
     (if (query.isNullOrBlank()) {
@@ -136,12 +121,7 @@ private fun searchClients(query: String?): List<ClientResponseDTO> = transaction
 }
 
 /**
- * Advanced search for clients with specific field filters
- *
- * @param firstName Optional filter for firstName field
- * @param lastName Optional filter for lastName field
- * @param email Optional filter for email field
- * @return List of clients matching all provided filters
+ * Advanced search for clients with filters for first name, last name, and email
  */
 private fun advancedSearchClients(
     firstName: String?,
@@ -149,44 +129,31 @@ private fun advancedSearchClients(
     email: String?
 ): List<ClientResponseDTO> = transaction {
     val query = Tables.Clients.selectAll()
-
-    // Apply filters only for non-null parameters
     query.andWhere {
         var condition: Op<Boolean>? = null
-
         if (!firstName.isNullOrBlank()) {
             condition = Tables.Clients.firstName.lowerCase() like "%$firstName%"
         }
-
         if (!lastName.isNullOrBlank()) {
             val lastNameCondition = Tables.Clients.lastName.lowerCase() like "%$lastName%"
             condition = condition?.and(lastNameCondition) ?: lastNameCondition
         }
-
         if (!email.isNullOrBlank()) {
             val emailCondition = Tables.Clients.email.lowerCase() like "%$email%"
             condition = condition?.and(emailCondition) ?: emailCondition
         }
-
-        // If no parameters provided, return true to select all
         condition ?: Op.TRUE
     }
-
     query.map { mapToClientResponseDTO(it) }
 }
 
 /**
- * Get detailed client profile including enrolled programs
- *
- * @param clientId The client's ID
- * @return ClientProfileDTO or null if client not found
+ * Get client profile data, including enrolled programs
  */
 private fun getClientProfile(clientId: Int): ClientProfileDTO? = transaction {
-    // Fetch client data
     val clientRow = Tables.Clients.select { Tables.Clients.id eq clientId }.singleOrNull()
         ?: return@transaction null
 
-    // Fetch enrolled program IDs with join
     val enrolledPrograms = Tables.Enrollments
         .innerJoin(Tables.Programs)
         .select { Tables.Enrollments.clientId eq clientId }
@@ -198,7 +165,6 @@ private fun getClientProfile(clientId: Int): ClientProfileDTO? = transaction {
             )
         }
 
-    // Build response
     ClientProfileDTO(
         id = clientRow[Tables.Clients.id],
         firstName = clientRow[Tables.Clients.firstName],
@@ -209,27 +175,18 @@ private fun getClientProfile(clientId: Int): ClientProfileDTO? = transaction {
 }
 
 /**
- * Validate client data for creating a new client
- *
- * @param clientDTO The client data to validate
- * @return true if validation passed, false otherwise
+ * Validate required client data
  */
 private fun validateClientData(clientDTO: ClientDTO): Boolean {
-    // Validate required fields
     if (clientDTO.firstName.isBlank() || clientDTO.lastName.isBlank() || clientDTO.email.isBlank()) {
         return false
     }
-
-    // Validate email format
     val emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$".toRegex()
     return clientDTO.email.matches(emailRegex)
 }
 
 /**
- * Create a new client in the database
- *
- * @param clientDTO The client data to create
- * @return ClientResponseDTO with the created client data including ID
+ * Create a new client in the database and return the response DTO
  */
 private fun createClient(clientDTO: ClientDTO): ClientResponseDTO {
     val id = transaction {
@@ -239,7 +196,6 @@ private fun createClient(clientDTO: ClientDTO): ClientResponseDTO {
             it[email] = clientDTO.email
         } get Tables.Clients.id
     }
-
     return ClientResponseDTO(
         id = id,
         firstName = clientDTO.firstName,
@@ -250,9 +206,6 @@ private fun createClient(clientDTO: ClientDTO): ClientResponseDTO {
 
 /**
  * Enroll a client in a program
- *
- * @param clientId The client's ID
- * @param programId The program's ID
  */
 private fun enrollClientInProgram(clientId: Int, programId: Int) {
     transaction {
@@ -265,9 +218,6 @@ private fun enrollClientInProgram(clientId: Int, programId: Int) {
 
 /**
  * Map a database row to a ClientResponseDTO
- *
- * @param row The database row
- * @return Mapped ClientResponseDTO
  */
 private fun mapToClientResponseDTO(row: ResultRow): ClientResponseDTO =
     ClientResponseDTO(
@@ -278,10 +228,7 @@ private fun mapToClientResponseDTO(row: ResultRow): ClientResponseDTO =
     )
 
 /**
- * Create a standardized error response
- *
- * @param message The error message
- * @return Map with error field
+ * Standardized error response
  */
 private fun errorResponse(message: String): Map<String, String> =
     mapOf("error" to message)

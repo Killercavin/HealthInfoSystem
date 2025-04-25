@@ -4,5 +4,6 @@ import com.example.configs.db.DatabaseFactory
 import io.ktor.server.application.*
 
 fun Application.configureDatabase() {
-    return DatabaseFactory.init() // Initializing the database
+    // Initialize database connection
+    return DatabaseFactory.init()
 }
