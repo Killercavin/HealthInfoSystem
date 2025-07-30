@@ -14,7 +14,7 @@ import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-/**
+/*
  * Defines client-related API routes
  */
 fun Route.clientRoutes() {
