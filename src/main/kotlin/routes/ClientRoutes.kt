@@ -27,7 +27,7 @@ fun Route.clientRoutes() {
     }
 }
 
-/**
+/*
  * Configures GET endpoints for clients
  */
 private fun Route.configureClientGetOperations() {
@@ -60,24 +60,22 @@ private fun Route.configureClientGetOperations() {
     }
 }
 
-/**
+/*
  * Configures POST endpoints for clients
  */
 private fun Route.configureClientPostOperations() {
     // Create a new client
     post {
         try {
-            val clientDTO = call.receive<ClientDTO>()
-            if (!validateClientData(clientDTO)) {
-                call.respond(HttpStatusCode.BadRequest, errorResponse("Invalid client data"))
+            val request = call.receive<ClientDTO>()
+            if (!validateClientData(request)) {
+                call.respond(HttpStatusCode.BadRequest, errorResponse("Missing client data"))
                 return@post
             }
-            val response = createClient(clientDTO)
+            val response = createClient(request)
             call.respond(HttpStatusCode.Created, response)
-        } catch (e: ContentTransformationException) {
-            call.respond(HttpStatusCode.BadRequest, errorResponse("Invalid request format"))
         } catch (e: Exception) {
-            call.application.log.error("Error creating client", e)
+            call.application.log.error(e.message)
             call.respond(HttpStatusCode.InternalServerError, errorResponse("Failed to create client"))
         }
     }
@@ -92,6 +90,7 @@ private fun Route.configureClientPostOperations() {
                 require(it.programId > 0) { "Program ID must be valid" }
             }
         } catch (e: Exception) {
+            call.application.log.error(e.message)
             return@post call.respond(HttpStatusCode.BadRequest, errorResponse("Invalid request body"))
         }
 
@@ -105,7 +104,7 @@ private fun Route.configureClientPostOperations() {
     }
 }
 
-/**
+/*
  * Search for clients based on a general query
  */
 private fun searchClients(query: String?): List<ClientResponseDTO> = transaction {
@@ -120,7 +119,7 @@ private fun searchClients(query: String?): List<ClientResponseDTO> = transaction
     }).map { mapToClientResponseDTO(it) }
 }
 
-/**
+/*
  * Advanced search for clients with filters for first name, last name, and email
  */
 private fun advancedSearchClients(
@@ -147,7 +146,7 @@ private fun advancedSearchClients(
     query.map { mapToClientResponseDTO(it) }
 }
 
-/**
+/*
  * Get client profile data, including enrolled programs
  */
 private fun getClientProfile(clientId: Int): ClientProfileDTO? = transaction {
@@ -174,7 +173,7 @@ private fun getClientProfile(clientId: Int): ClientProfileDTO? = transaction {
     )
 }
 
-/**
+/*
  * Validate required client data
  */
 private fun validateClientData(clientDTO: ClientDTO): Boolean {
@@ -185,7 +184,7 @@ private fun validateClientData(clientDTO: ClientDTO): Boolean {
     return clientDTO.email.matches(emailRegex)
 }
 
-/**
+/*
  * Create a new client in the database and return the response DTO
  */
 private fun createClient(clientDTO: ClientDTO): ClientResponseDTO {
@@ -204,7 +203,7 @@ private fun createClient(clientDTO: ClientDTO): ClientResponseDTO {
     )
 }
 
-/**
+/*
  * Enroll a client in a program
  */
 private fun enrollClientInProgram(clientId: Int, programId: Int) {
@@ -216,7 +215,7 @@ private fun enrollClientInProgram(clientId: Int, programId: Int) {
     }
 }
 
-/**
+/*
  * Map a database row to a ClientResponseDTO
  */
 private fun mapToClientResponseDTO(row: ResultRow): ClientResponseDTO =
@@ -227,7 +226,7 @@ private fun mapToClientResponseDTO(row: ResultRow): ClientResponseDTO =
         email = row[Tables.Clients.email]
     )
 
-/**
+/*
  * Standardized error response
  */
 private fun errorResponse(message: String): Map<String, String> =

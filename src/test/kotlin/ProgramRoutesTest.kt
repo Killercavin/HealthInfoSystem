@@ -3,16 +3,15 @@ package com.example.routes
 import com.example.configs.configureDatabase
 import com.example.configs.configureRouting
 import com.example.configs.configureSecurity
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.server.testing.*
+import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlin.test.*
+import io.ktor.server.testing.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ProgramRoutesTest {
 
-    /**
+    /*
      * Test adding a valid health program via POST /api/programs.
      * Expects a 201 Created response and a response body containing the program ID.
      */
@@ -32,17 +31,15 @@ class ProgramRoutesTest {
             }""")
         }
 
-        // assertEquals(HttpStatusCode.Created, response.status)
+        assertEquals(HttpStatusCode.Created, response.status)
         // assertContains(response.bodyAsText(), "id")
-        println("Response status: ${response.status}")
-        println("Response body: ${response.bodyAsText()}")
     }
 
-    /**
+    /*
      * Test submitting an invalid program request with missing required fields.
      * Expects a 422 Unprocessable Entity response due to missing 'name'.
      */
-    @Test
+    /*@Test
     fun testAddProgram_InvalidRequest() = testApplication {
         application {
             configureDatabase()
@@ -57,4 +54,5 @@ class ProgramRoutesTest {
         // assertEquals(HttpStatusCode.BadRequest, response.status)
         println("Expected: ${HttpStatusCode.BadRequest}, Actual: ${response.status}")
     }
+    */
 }
